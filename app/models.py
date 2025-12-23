@@ -10,6 +10,9 @@ def generate_uuid_str() -> str:
 
 
 class User(sqlmodel.SQLModel, table=True):
+
+    __tablename__ = "users"
+
     id: str = sqlmodel.Field(
         default_factory=generate_uuid_str, primary_key=True
     )
@@ -28,6 +31,9 @@ class User(sqlmodel.SQLModel, table=True):
 
 
 class LoginLog(sqlmodel.SQLModel, table=True):
+
+    __tablename__ = "login_logs"
+
     id: str = sqlmodel.Field(
         default_factory=generate_uuid_str, primary_key=True, nullable=False
     )
