@@ -6,3 +6,6 @@ pyjwt
 
 # Hashing
 pwdlib[argon2]
+
+# DB
+sqlmodel
