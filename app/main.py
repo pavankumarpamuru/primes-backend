@@ -1,28 +1,30 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+from app.database import create_db_and_tables
+from app.routers import auth_router
+from app import settings
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_db_and_tables()
+    yield
+
+
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    lifespan=lifespan
+)
+
+app.include_router(auth_router)
 
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
-
-
-class Item(BaseModel):
-    name: str
-    description: str | None = None
-    price: float
-    tax: float | None = None
-
-
-app = FastAPI()
-
-
-@app.post("/items/")
-async def create_item(item: Item):
-    item_dict = item.model_dump()
-    if item.tax is not None:
-        price_with_tax = item.price + item.tax
-        item_dict.update({"price_with_tax": price_with_tax})
-    return item_dict
+    return {
+        "message": "Primes Backend API",
+        "version": settings.APP_VERSION,
+        "docs": "/docs"
+    }

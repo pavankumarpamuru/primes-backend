@@ -1,11 +1,6 @@
-# Framework
 fastapi
-
-# Auth
+uvicorn
 pyjwt
-
-# Hashing
 pwdlib[argon2]
-
-# DB
 sqlmodel
+python-dotenv
