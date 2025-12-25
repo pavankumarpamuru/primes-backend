@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 from typing import Optional
+
 import jwt
 from pwdlib import PasswordHash
 
 from app import settings
-
 
 pwd_context = PasswordHash.recommended()
 
@@ -30,9 +30,7 @@ def create_jwt_token(user_id: str, username: str) -> tuple[str, int]:
     }
 
     token = jwt.encode(
-        payload=payload,
-        key=settings.JWT_SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM
+        payload=payload, key=settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
     )
 
     return token, settings.JWT_EXPIRATION_MINUTES * 60
@@ -41,9 +39,7 @@ def create_jwt_token(user_id: str, username: str) -> tuple[str, int]:
 def decode_jwt_token(token: str) -> Optional[dict]:
     try:
         payload = jwt.decode(
-            jwt=token,
-            key=settings.JWT_SECRET_KEY,
-            algorithms=[settings.JWT_ALGORITHM]
+            jwt=token, key=settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
         )
         return payload
     except jwt.ExpiredSignatureError:

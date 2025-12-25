@@ -1,26 +1,26 @@
 from typing import Optional
+
 from fastapi.responses import JSONResponse
 
-from app.dtos import LoginRequestDTO, LoginResultDTO, LoginLogDTO, UserDTO
-from app.interactos.storage_interface import IUserStorage, ILoginLogStorage
-from app.interactos.presenter_interface import ILoginPresenter
-from app.utils import verify_password, create_jwt_token
-from app.exceptions import (
-    InvalidInputException,
-    UserNotFoundException,
-    InvalidPasswordException,
-    InactiveAccountException
-)
 from app.decorators import log_failed_login
+from app.dtos import LoginLogDTO, LoginRequestDTO, LoginResultDTO, UserDTO
+from app.exceptions import (
+    InactiveAccountException,
+    InvalidInputException,
+    InvalidPasswordException,
+    UserNotFoundException,
+)
+from app.interactos.presenter_interface import ILoginPresenter
+from app.interactos.storage_interface import ILoginLogStorage, IUserStorage
+from app.utils import create_jwt_token, verify_password
 
 
 class LoginInteractor:
-
     def __init__(
         self,
         user_storage: IUserStorage,
         login_log_storage: ILoginLogStorage,
-        presenter: ILoginPresenter
+        presenter: ILoginPresenter,
     ):
         self.user_storage = user_storage
         self.login_log_storage = login_log_storage
@@ -50,14 +50,11 @@ class LoginInteractor:
         self._log_successful_login(
             user_id=user_dto.id,
             ip_address=request_dto.ip_address,
-            user_agent=request_dto.user_agent
+            user_agent=request_dto.user_agent,
         )
 
         return LoginResultDTO(
-            success=True,
-            user=user_dto,
-            jwt_token=jwt_token,
-            expires_in=expires_in
+            success=True, user=user_dto, jwt_token=jwt_token, expires_in=expires_in
         )
 
     def _validate_input(self, request_dto: LoginRequestDTO) -> None:
@@ -78,27 +75,18 @@ class LoginInteractor:
             raise InactiveAccountException(user_id=user_dto.id)
 
         if not verify_password(
-            plain_password=request_dto.password,
-            hashed_password=user_dto.password_hash
+            plain_password=request_dto.password, hashed_password=user_dto.password_hash
         ):
             raise InvalidPasswordException(user_id=user_dto.id)
 
     def _generate_token(self, user_dto: UserDTO) -> tuple[str, int]:
-        return create_jwt_token(
-            user_id=user_dto.id,
-            username=user_dto.username
-        )
+        return create_jwt_token(user_id=user_dto.id, username=user_dto.username)
 
     def _log_successful_login(
-        self,
-        user_id: str,
-        ip_address: Optional[str],
-        user_agent: Optional[str]
+        self, user_id: str, ip_address: Optional[str], user_agent: Optional[str]
     ):
         log_dto = LoginLogDTO(
-            user_id=user_id,
-            ip_address=ip_address,
-            user_agent=user_agent
+            user_id=user_id, ip_address=ip_address, user_agent=user_agent
         )
         self.login_log_storage.create(login_log_dto=log_dto)
 
@@ -106,14 +94,12 @@ class LoginInteractor:
         self,
         user_id: Optional[str],
         ip_address: Optional[str],
-        user_agent: Optional[str]
+        user_agent: Optional[str],
     ):
         if user_id is None:
             return
 
         log_dto = LoginLogDTO(
-            user_id=user_id,
-            ip_address=ip_address,
-            user_agent=user_agent
+            user_id=user_id, ip_address=ip_address, user_agent=user_agent
         )
         self.login_log_storage.create(login_log_dto=log_dto)

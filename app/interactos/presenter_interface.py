@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
+
 from fastapi.responses import JSONResponse
 
 from app.dtos import LoginResultDTO
 
 
 class ILoginPresenter(ABC):
-
     @abstractmethod
     def get_success_response(self, result: LoginResultDTO) -> JSONResponse:
         pass

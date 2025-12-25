@@ -5,18 +5,24 @@ from sqlmodel.pool import StaticPool
 from app.models import User
 from app.utils import hash_password
 from tests.factories.dto_factories import (
-    UserDTOFactory,
-    LoginRequestDTOFactory,
     LoginLogDTOFactory,
-    LoginResultDTOFactory
+    LoginRequestDTOFactory,
+    LoginResultDTOFactory,
+    UserDTOFactory,
 )
 
 
 @pytest.fixture(scope="function", autouse=True)
 def reset_sequences():
     from faker import Faker as FakerClass
+
     FakerClass.seed(12345)
-    for factory_class in [UserDTOFactory, LoginRequestDTOFactory, LoginLogDTOFactory, LoginResultDTOFactory]:
+    for factory_class in [
+        UserDTOFactory,
+        LoginRequestDTOFactory,
+        LoginLogDTOFactory,
+        LoginResultDTOFactory,
+    ]:
         factory_class.reset_sequence(0)
     yield
 

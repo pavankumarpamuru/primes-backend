@@ -1,8 +1,9 @@
-import factory
-from factory import Faker, LazyAttribute, Sequence
 from datetime import datetime
 
-from app.dtos import UserDTO, LoginRequestDTO, LoginLogDTO, LoginResultDTO
+import factory
+from factory import Faker, LazyAttribute, Sequence
+
+from app.dtos import LoginLogDTO, LoginRequestDTO, LoginResultDTO, UserDTO
 from app.utils import hash_password
 
 

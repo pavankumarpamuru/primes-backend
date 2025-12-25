@@ -1,9 +1,9 @@
 import pytest
-from sqlmodel import Session, select
 from freezegun import freeze_time
+from sqlmodel import Session, select
 
-from app.storages.storage_implementation import LoginLogStorage
 from app.models import LoginLog
+from app.storages.storage_implementation import LoginLogStorage
 from tests.factories.dto_factories import LoginLogDTOFactory
 
 
@@ -13,9 +13,10 @@ def login_log_storage(session: Session):
 
 
 class TestCreate:
-
     @freeze_time("2025-01-01 12:00:00")
-    def test_creates_login_log_successfully(self, login_log_storage: LoginLogStorage, session: Session):
+    def test_creates_login_log_successfully(
+        self, login_log_storage: LoginLogStorage, session: Session
+    ):
         # Arrange
         expected_user_id = "user-123"
         expected_ip_address = "127.0.0.1"
@@ -24,7 +25,7 @@ class TestCreate:
         login_log_dto = LoginLogDTOFactory(
             user_id=expected_user_id,
             ip_address=expected_ip_address,
-            user_agent=expected_user_agent
+            user_agent=expected_user_agent,
         )
 
         # Act
@@ -39,14 +40,15 @@ class TestCreate:
         assert result.login_timestamp is not None
 
     @freeze_time("2025-01-01 12:00:00")
-    def test_persists_login_log_to_database(self, login_log_storage: LoginLogStorage, session: Session):
+    def test_persists_login_log_to_database(
+        self, login_log_storage: LoginLogStorage, session: Session
+    ):
         # Arrange
         expected_user_id = "user-456"
         expected_ip_address = "192.168.1.1"
 
         login_log_dto = LoginLogDTOFactory(
-            user_id=expected_user_id,
-            ip_address=expected_ip_address
+            user_id=expected_user_id, ip_address=expected_ip_address
         )
 
         # Act
@@ -60,7 +62,9 @@ class TestCreate:
         assert stored_log.ip_address == expected_ip_address
 
     @freeze_time("2025-01-01 12:00:00")
-    def test_creates_multiple_login_logs_independently(self, login_log_storage: LoginLogStorage, session: Session):
+    def test_creates_multiple_login_logs_independently(
+        self, login_log_storage: LoginLogStorage, session: Session
+    ):
         # Arrange
         user_id_1 = "user-001"
         user_id_2 = "user-002"
@@ -82,7 +86,9 @@ class TestCreate:
         assert result_2.ip_address == ip_address_2
 
     @freeze_time("2025-01-01 12:00:00")
-    def test_sets_login_timestamp_automatically(self, login_log_storage: LoginLogStorage):
+    def test_sets_login_timestamp_automatically(
+        self, login_log_storage: LoginLogStorage
+    ):
         # Arrange
         user_id = "user-789"
         login_log_dto = LoginLogDTOFactory(user_id=user_id)
@@ -99,10 +105,7 @@ class TestCreate:
         user_id = "user-123"
         null_ip_address = None
 
-        login_log_dto = LoginLogDTOFactory(
-            user_id=user_id,
-            ip_address=null_ip_address
-        )
+        login_log_dto = LoginLogDTOFactory(user_id=user_id, ip_address=null_ip_address)
 
         # Act
         result = login_log_storage.create(login_log_dto=login_log_dto)
@@ -118,10 +121,7 @@ class TestCreate:
         user_id = "user-123"
         null_user_agent = None
 
-        login_log_dto = LoginLogDTOFactory(
-            user_id=user_id,
-            user_agent=null_user_agent
-        )
+        login_log_dto = LoginLogDTOFactory(user_id=user_id, user_agent=null_user_agent)
 
         # Act
         result = login_log_storage.create(login_log_dto=login_log_dto)

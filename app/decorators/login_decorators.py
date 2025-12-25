@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Callable
 
-from app.exceptions import LoginException, InvalidInputException
+from app.exceptions import InvalidInputException, LoginException
 
 
 def log_failed_login(func: Callable) -> Callable:
@@ -16,7 +16,8 @@ def log_failed_login(func: Callable) -> Callable:
                 self._log_failed_login(
                     user_id=e.user_id,
                     ip_address=request_dto.ip_address,
-                    user_agent=request_dto.user_agent
+                    user_agent=request_dto.user_agent,
                 )
             raise
+
     return wrapper

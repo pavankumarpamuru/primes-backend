@@ -1,16 +1,16 @@
+from unittest.mock import create_autospec, patch
+
 import pytest
-from unittest.mock import patch, create_autospec
-from freezegun import freeze_time
-from datetime import datetime
 from fastapi.responses import JSONResponse
+from freezegun import freeze_time
 
 from app.interactos.login_interactor import LoginInteractor
-from app.interactos.storage_interface import IUserStorage, ILoginLogStorage
 from app.interactos.presenter_interface import ILoginPresenter
+from app.interactos.storage_interface import ILoginLogStorage, IUserStorage
 from tests.factories.dto_factories import (
-    UserDTOFactory,
+    LoginLogDTOFactory,
     LoginRequestDTOFactory,
-    LoginLogDTOFactory
+    UserDTOFactory,
 )
 
 
@@ -27,10 +27,18 @@ def mock_login_log_storage():
 @pytest.fixture
 def mock_presenter():
     presenter = create_autospec(spec=ILoginPresenter, instance=True)
-    presenter.get_success_response.return_value = JSONResponse(content={"success": True}, status_code=200)
-    presenter.get_invalid_input_response.return_value = JSONResponse(content={"error": "invalid"}, status_code=400)
-    presenter.get_invalid_credentials_response.return_value = JSONResponse(content={"error": "invalid_creds"}, status_code=401)
-    presenter.get_inactive_account_response.return_value = JSONResponse(content={"error": "inactive"}, status_code=403)
+    presenter.get_success_response.return_value = JSONResponse(
+        content={"success": True}, status_code=200
+    )
+    presenter.get_invalid_input_response.return_value = JSONResponse(
+        content={"error": "invalid"}, status_code=400
+    )
+    presenter.get_invalid_credentials_response.return_value = JSONResponse(
+        content={"error": "invalid_creds"}, status_code=401
+    )
+    presenter.get_inactive_account_response.return_value = JSONResponse(
+        content={"error": "inactive"}, status_code=403
+    )
     return presenter
 
 
@@ -39,17 +47,14 @@ def login_interactor(mock_user_storage, mock_login_log_storage, mock_presenter):
     return LoginInteractor(
         user_storage=mock_user_storage,
         login_log_storage=mock_login_log_storage,
-        presenter=mock_presenter
+        presenter=mock_presenter,
     )
 
 
 @pytest.fixture
 def active_user_dto():
     return UserDTOFactory(
-        id="user-123",
-        username="testuser",
-        email="test@example.com",
-        is_active=True
+        id="user-123", username="testuser", email="test@example.com", is_active=True
     )
 
 
@@ -59,7 +64,7 @@ def inactive_user_dto():
         id="user-456",
         username="inactiveuser",
         email="inactive@example.com",
-        is_active=False
+        is_active=False,
     )
 
 
@@ -69,12 +74,11 @@ def valid_login_request():
         username="testuser",
         password="password123",
         ip_address="127.0.0.1",
-        user_agent="Mozilla/5.0"
+        user_agent="Mozilla/5.0",
     )
 
 
 class TestUserLoginWrapper:
-
     @freeze_time("2025-01-01 12:00:00")
     @patch("app.interactos.login_interactor.create_jwt_token")
     @patch("app.interactos.login_interactor.verify_password")
@@ -87,7 +91,7 @@ class TestUserLoginWrapper:
         mock_login_log_storage,
         mock_presenter,
         active_user_dto,
-        valid_login_request
+        valid_login_request,
     ):
         # Arrange
         expected_username = "testuser"
@@ -108,14 +112,15 @@ class TestUserLoginWrapper:
 
         # Assert
         assert response.status_code == expected_status_code
-        mock_user_storage.get_by_username.assert_called_once_with(username=expected_username)
+        mock_user_storage.get_by_username.assert_called_once_with(
+            username=expected_username
+        )
         mock_verify_password.assert_called_once_with(
             plain_password=expected_password,
-            hashed_password=active_user_dto.password_hash
+            hashed_password=active_user_dto.password_hash,
         )
         mock_create_jwt_token.assert_called_once_with(
-            user_id=expected_user_id,
-            username=expected_username
+            user_id=expected_user_id, username=expected_username
         )
         mock_login_log_storage.create.assert_called_once()
         call_args = mock_presenter.get_success_response.call_args
@@ -123,18 +128,16 @@ class TestUserLoginWrapper:
         assert call_args.kwargs["result"].expires_in == expected_expires_in
         assert call_args.kwargs["result"].user.username == expected_username
 
-    def test_invalid_input_empty_username(
-        self,
-        login_interactor,
-        mock_presenter
-    ):
+    def test_invalid_input_empty_username(self, login_interactor, mock_presenter):
         # Arrange
         empty_username = ""
         valid_password = "password123"
         expected_status_code = 400
         expected_error_message = "Username is required"
 
-        request = LoginRequestDTOFactory(username=empty_username, password=valid_password)
+        request = LoginRequestDTOFactory(
+            username=empty_username, password=valid_password
+        )
 
         # Act
         response = login_interactor.user_login_wrapper(request_dto=request)
@@ -145,18 +148,16 @@ class TestUserLoginWrapper:
             message=expected_error_message
         )
 
-    def test_invalid_input_whitespace_username(
-        self,
-        login_interactor,
-        mock_presenter
-    ):
+    def test_invalid_input_whitespace_username(self, login_interactor, mock_presenter):
         # Arrange
         whitespace_username = "   "
         valid_password = "password123"
         expected_status_code = 400
         expected_error_message = "Username is required"
 
-        request = LoginRequestDTOFactory(username=whitespace_username, password=valid_password)
+        request = LoginRequestDTOFactory(
+            username=whitespace_username, password=valid_password
+        )
 
         # Act
         response = login_interactor.user_login_wrapper(request_dto=request)
@@ -167,18 +168,16 @@ class TestUserLoginWrapper:
             message=expected_error_message
         )
 
-    def test_invalid_input_empty_password(
-        self,
-        login_interactor,
-        mock_presenter
-    ):
+    def test_invalid_input_empty_password(self, login_interactor, mock_presenter):
         # Arrange
         valid_username = "testuser"
         empty_password = ""
         expected_status_code = 400
         expected_error_message = "Password is required"
 
-        request = LoginRequestDTOFactory(username=valid_username, password=empty_password)
+        request = LoginRequestDTOFactory(
+            username=valid_username, password=empty_password
+        )
 
         # Act
         response = login_interactor.user_login_wrapper(request_dto=request)
@@ -189,18 +188,16 @@ class TestUserLoginWrapper:
             message=expected_error_message
         )
 
-    def test_invalid_input_whitespace_password(
-        self,
-        login_interactor,
-        mock_presenter
-    ):
+    def test_invalid_input_whitespace_password(self, login_interactor, mock_presenter):
         # Arrange
         valid_username = "testuser"
         whitespace_password = "   "
         expected_status_code = 400
         expected_error_message = "Password is required"
 
-        request = LoginRequestDTOFactory(username=valid_username, password=whitespace_password)
+        request = LoginRequestDTOFactory(
+            username=valid_username, password=whitespace_password
+        )
 
         # Act
         response = login_interactor.user_login_wrapper(request_dto=request)
@@ -212,11 +209,7 @@ class TestUserLoginWrapper:
         )
 
     def test_user_not_found(
-        self,
-        login_interactor,
-        mock_user_storage,
-        mock_presenter,
-        valid_login_request
+        self, login_interactor, mock_user_storage, mock_presenter, valid_login_request
     ):
         # Arrange
         expected_username = "testuser"
@@ -230,7 +223,9 @@ class TestUserLoginWrapper:
 
         # Assert
         assert response.status_code == expected_status_code
-        mock_user_storage.get_by_username.assert_called_once_with(username=expected_username)
+        mock_user_storage.get_by_username.assert_called_once_with(
+            username=expected_username
+        )
         mock_presenter.get_invalid_credentials_response.assert_called_once_with()
 
     @patch("app.interactos.login_interactor.verify_password")
@@ -242,7 +237,7 @@ class TestUserLoginWrapper:
         mock_login_log_storage,
         mock_presenter,
         active_user_dto,
-        valid_login_request
+        valid_login_request,
     ):
         # Arrange
         expected_username = "testuser"
@@ -259,10 +254,12 @@ class TestUserLoginWrapper:
 
         # Assert
         assert response.status_code == expected_status_code
-        mock_user_storage.get_by_username.assert_called_once_with(username=expected_username)
+        mock_user_storage.get_by_username.assert_called_once_with(
+            username=expected_username
+        )
         mock_verify_password.assert_called_once_with(
             plain_password=expected_password,
-            hashed_password=active_user_dto.password_hash
+            hashed_password=active_user_dto.password_hash,
         )
         mock_presenter.get_invalid_credentials_response.assert_called_once_with()
         mock_login_log_storage.create.assert_called_once()
@@ -276,7 +273,7 @@ class TestUserLoginWrapper:
         mock_login_log_storage,
         mock_presenter,
         inactive_user_dto,
-        valid_login_request
+        valid_login_request,
     ):
         # Arrange
         expected_username = "testuser"
@@ -292,7 +289,9 @@ class TestUserLoginWrapper:
 
         # Assert
         assert response.status_code == expected_status_code
-        mock_user_storage.get_by_username.assert_called_once_with(username=expected_username)
+        mock_user_storage.get_by_username.assert_called_once_with(
+            username=expected_username
+        )
         mock_presenter.get_inactive_account_response.assert_called_once_with()
         mock_login_log_storage.create.assert_called_once()
 
@@ -308,7 +307,7 @@ class TestUserLoginWrapper:
         mock_login_log_storage,
         mock_presenter,
         active_user_dto,
-        valid_login_request
+        valid_login_request,
     ):
         # Arrange
         expected_user_id = "user-123"
@@ -344,7 +343,7 @@ class TestUserLoginWrapper:
         mock_login_log_storage,
         mock_presenter,
         active_user_dto,
-        valid_login_request
+        valid_login_request,
     ):
         # Arrange
         expected_user_id = "user-123"
@@ -374,7 +373,7 @@ class TestUserLoginWrapper:
         mock_user_storage,
         mock_login_log_storage,
         mock_presenter,
-        valid_login_request
+        valid_login_request,
     ):
         # Arrange
         expected_status_code = 401
