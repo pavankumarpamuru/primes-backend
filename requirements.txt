@@ -4,3 +4,6 @@ pyjwt
 pwdlib[argon2]
 sqlmodel
 python-dotenv
+pytest
+factory-boy
+freezegun
