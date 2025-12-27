@@ -15,7 +15,6 @@ class TestGetByUsername:
     def test_returns_user_when_username_exists(
         self, user_storage: UserStorage, session: Session
     ):
-        # Arrange
         expected_user_id = "user-123"
         expected_username = "testuser"
         expected_email = "test@example.com"
@@ -34,10 +33,8 @@ class TestGetByUsername:
         session.add(instance=user)
         session.commit()
 
-        # Act
         result = user_storage.get_by_username(username=expected_username)
 
-        # Assert
         assert result is not None
         assert result.id == expected_user_id
         assert result.username == expected_username
@@ -47,19 +44,15 @@ class TestGetByUsername:
         assert result.password_hash is not None
 
     def test_returns_none_when_username_not_found(self, user_storage: UserStorage):
-        # Arrange
         nonexistent_username = "nonexistent"
 
-        # Act
         result = user_storage.get_by_username(username=nonexistent_username)
 
-        # Assert
         assert result is None
 
     def test_search_is_case_sensitive(
         self, user_storage: UserStorage, session: Session
     ):
-        # Arrange
         stored_username = "testuser"
         search_username = "TESTUSER"
 
@@ -74,16 +67,13 @@ class TestGetByUsername:
         session.add(instance=user)
         session.commit()
 
-        # Act
         result = user_storage.get_by_username(username=search_username)
 
-        # Assert
         assert result is None
 
     def test_returns_correct_user_when_multiple_users_exist(
         self, user_storage: UserStorage, session: Session
     ):
-        # Arrange
         target_username = "user2"
         expected_user_id = "user-002"
         expected_email = "user2@example.com"
@@ -114,10 +104,8 @@ class TestGetByUsername:
         session.add(instance=user3)
         session.commit()
 
-        # Act
         result = user_storage.get_by_username(username=target_username)
 
-        # Assert
         assert result is not None
         assert result.id == expected_user_id
         assert result.username == target_username
@@ -126,7 +114,6 @@ class TestGetByUsername:
     def test_preserves_password_hash_in_result(
         self, user_storage: UserStorage, session: Session
     ):
-        # Arrange
         username = "testuser"
         plain_password = "password123"
         expected_hash_length_min = 50
@@ -142,10 +129,8 @@ class TestGetByUsername:
         session.commit()
         expected_password_hash = user.password_hash
 
-        # Act
         result = user_storage.get_by_username(username=username)
 
-        # Assert
         assert result is not None
         assert result.password_hash == expected_password_hash
         assert len(result.password_hash) > expected_hash_length_min
@@ -153,7 +138,6 @@ class TestGetByUsername:
     def test_returns_inactive_user_when_exists(
         self, user_storage: UserStorage, session: Session
     ):
-        # Arrange
         username = "inactiveuser"
         expected_is_active = False
 
@@ -167,10 +151,8 @@ class TestGetByUsername:
         session.add(instance=user)
         session.commit()
 
-        # Act
         result = user_storage.get_by_username(username=username)
 
-        # Assert
         assert result is not None
         assert result.username == username
         assert result.is_active == expected_is_active

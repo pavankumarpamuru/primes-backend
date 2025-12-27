@@ -40,3 +40,15 @@ class LoginResultDTO:
     jwt_token: Optional[str] = None
     expires_in: Optional[int] = None
     error_message: Optional[str] = None
+
+
+@dataclass
+class PrimeNumbersRequestDTO:
+    count: int
+    user_id: str
+
+
+@dataclass
+class PrimeNumbersResultDTO:
+    count: int
+    primes: list[int]

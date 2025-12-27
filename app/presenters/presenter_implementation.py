@@ -1,8 +1,7 @@
 from fastapi.responses import JSONResponse
 
-from app.dtos import LoginResultDTO
-from app.exception_messages import INACTIVE_ACCOUNT, INVALID_CREDENTIALS, INVALID_INPUT
-from app.interactos.presenter_interface import ILoginPresenter
+from app.dtos import LoginResultDTO, PrimeNumbersResultDTO
+from app.interactos.presenter_interface import ILoginPresenter, IPrimeNumbersPresenter
 
 
 class LoginPresenter(ILoginPresenter):
@@ -23,24 +22,23 @@ class LoginPresenter(ILoginPresenter):
         return JSONResponse(content=response, status_code=200)
 
     def get_invalid_input_response(self, message: str) -> JSONResponse:
-        error_code, default_message = INVALID_INPUT
-
-        response = {
-            "error": {"code": error_code, "message": message or default_message}
-        }
-
+        response = {"error": {"code": "INVALID_INPUT"}}
         return JSONResponse(content=response, status_code=400)
 
     def get_invalid_credentials_response(self) -> JSONResponse:
-        error_code, error_message = INVALID_CREDENTIALS
-
-        response = {"error": {"code": error_code, "message": error_message}}
-
+        response = {"error": {"code": "INVALID_CREDENTIALS"}}
         return JSONResponse(content=response, status_code=401)
 
     def get_inactive_account_response(self) -> JSONResponse:
-        error_code, error_message = INACTIVE_ACCOUNT
-
-        response = {"error": {"code": error_code, "message": error_message}}
-
+        response = {"error": {"code": "INACTIVE_ACCOUNT"}}
         return JSONResponse(content=response, status_code=403)
+
+
+class PrimeNumbersPresenter(IPrimeNumbersPresenter):
+    def get_success_response(self, result: PrimeNumbersResultDTO) -> JSONResponse:
+        response = {"count": result.count, "primes": result.primes}
+        return JSONResponse(content=response, status_code=200)
+
+    def get_invalid_input_response(self, message: str) -> JSONResponse:
+        response = {"error": {"code": "INVALID_INPUT"}}
+        return JSONResponse(content=response, status_code=400)

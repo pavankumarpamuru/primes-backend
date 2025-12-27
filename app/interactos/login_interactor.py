@@ -59,10 +59,10 @@ class LoginInteractor:
 
     def _validate_input(self, request_dto: LoginRequestDTO) -> None:
         if not request_dto.username or not request_dto.username.strip():
-            raise InvalidInputException(message="Username is required")
+            raise InvalidInputException()
 
         if not request_dto.password or not request_dto.password.strip():
-            raise InvalidInputException(message="Password is required")
+            raise InvalidInputException()
 
     def _fetch_user(self, username: str) -> UserDTO:
         user_dto = self.user_storage.get_by_username(username=username)

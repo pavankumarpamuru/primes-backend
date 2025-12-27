@@ -2,9 +2,8 @@ from typing import Optional
 
 
 class LoginException(Exception):
-    def __init__(self, message: str = "", user_id: Optional[str] = None):
-        super().__init__(message)
-        self.message = message
+    def __init__(self, user_id: Optional[str] = None):
+        super().__init__()
         self.user_id = user_id
 
 

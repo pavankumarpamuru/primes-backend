@@ -93,7 +93,6 @@ class TestUserLoginWrapper:
         active_user_dto,
         valid_login_request,
     ):
-        # Arrange
         expected_username = "testuser"
         expected_user_id = "user-123"
         expected_password = "password123"
@@ -107,11 +106,12 @@ class TestUserLoginWrapper:
         mock_create_jwt_token.return_value = (expected_jwt_token, expected_expires_in)
         mock_login_log_storage.create.return_value = LoginLogDTOFactory()
 
-        # Act
+        mock_login_log_storage.create.return_value = LoginLogDTOFactory()
+
         response = login_interactor.user_login_wrapper(request_dto=valid_login_request)
 
-        # Assert
         assert response.status_code == expected_status_code
+        mock_login_log_storage.create.assert_called_once()
         mock_user_storage.get_by_username.assert_called_once_with(
             username=expected_username
         )
@@ -129,99 +129,72 @@ class TestUserLoginWrapper:
         assert call_args.kwargs["result"].user.username == expected_username
 
     def test_invalid_input_empty_username(self, login_interactor, mock_presenter):
-        # Arrange
         empty_username = ""
         valid_password = "password123"
         expected_status_code = 400
-        expected_error_message = "Username is required"
 
         request = LoginRequestDTOFactory(
             username=empty_username, password=valid_password
         )
 
-        # Act
         response = login_interactor.user_login_wrapper(request_dto=request)
 
-        # Assert
         assert response.status_code == expected_status_code
-        mock_presenter.get_invalid_input_response.assert_called_once_with(
-            message=expected_error_message
-        )
+        mock_presenter.get_invalid_input_response.assert_called_once()
 
     def test_invalid_input_whitespace_username(self, login_interactor, mock_presenter):
-        # Arrange
         whitespace_username = "   "
         valid_password = "password123"
         expected_status_code = 400
-        expected_error_message = "Username is required"
 
         request = LoginRequestDTOFactory(
             username=whitespace_username, password=valid_password
         )
 
-        # Act
         response = login_interactor.user_login_wrapper(request_dto=request)
 
-        # Assert
         assert response.status_code == expected_status_code
-        mock_presenter.get_invalid_input_response.assert_called_once_with(
-            message=expected_error_message
-        )
+        mock_presenter.get_invalid_input_response.assert_called_once()
 
     def test_invalid_input_empty_password(self, login_interactor, mock_presenter):
-        # Arrange
         valid_username = "testuser"
         empty_password = ""
         expected_status_code = 400
-        expected_error_message = "Password is required"
 
         request = LoginRequestDTOFactory(
             username=valid_username, password=empty_password
         )
 
-        # Act
         response = login_interactor.user_login_wrapper(request_dto=request)
 
-        # Assert
         assert response.status_code == expected_status_code
-        mock_presenter.get_invalid_input_response.assert_called_once_with(
-            message=expected_error_message
-        )
+        mock_presenter.get_invalid_input_response.assert_called_once()
 
     def test_invalid_input_whitespace_password(self, login_interactor, mock_presenter):
-        # Arrange
         valid_username = "testuser"
         whitespace_password = "   "
         expected_status_code = 400
-        expected_error_message = "Password is required"
 
         request = LoginRequestDTOFactory(
             username=valid_username, password=whitespace_password
         )
 
-        # Act
         response = login_interactor.user_login_wrapper(request_dto=request)
 
-        # Assert
         assert response.status_code == expected_status_code
-        mock_presenter.get_invalid_input_response.assert_called_once_with(
-            message=expected_error_message
-        )
+        mock_presenter.get_invalid_input_response.assert_called_once()
 
     def test_user_not_found(
         self, login_interactor, mock_user_storage, mock_presenter, valid_login_request
     ):
-        # Arrange
         expected_username = "testuser"
         expected_status_code = 401
         user_not_found = None
 
         mock_user_storage.get_by_username.return_value = user_not_found
 
-        # Act
         response = login_interactor.user_login_wrapper(request_dto=valid_login_request)
 
-        # Assert
         assert response.status_code == expected_status_code
         mock_user_storage.get_by_username.assert_called_once_with(
             username=expected_username
@@ -239,7 +212,6 @@ class TestUserLoginWrapper:
         active_user_dto,
         valid_login_request,
     ):
-        # Arrange
         expected_username = "testuser"
         expected_password = "password123"
         expected_status_code = 401
@@ -249,10 +221,10 @@ class TestUserLoginWrapper:
         mock_verify_password.return_value = password_verification_result
         mock_login_log_storage.create.return_value = LoginLogDTOFactory()
 
-        # Act
         response = login_interactor.user_login_wrapper(request_dto=valid_login_request)
 
-        # Assert
+        mock_login_log_storage.create.return_value = LoginLogDTOFactory()
+
         assert response.status_code == expected_status_code
         mock_user_storage.get_by_username.assert_called_once_with(
             username=expected_username
@@ -262,6 +234,7 @@ class TestUserLoginWrapper:
             hashed_password=active_user_dto.password_hash,
         )
         mock_presenter.get_invalid_credentials_response.assert_called_once_with()
+        mock_login_log_storage.create.assert_called_once()
         mock_login_log_storage.create.assert_called_once()
 
     @patch("app.interactos.login_interactor.verify_password")
@@ -275,7 +248,6 @@ class TestUserLoginWrapper:
         inactive_user_dto,
         valid_login_request,
     ):
-        # Arrange
         expected_username = "testuser"
         expected_status_code = 403
         password_verification_result = True
@@ -284,15 +256,16 @@ class TestUserLoginWrapper:
         mock_verify_password.return_value = password_verification_result
         mock_login_log_storage.create.return_value = LoginLogDTOFactory()
 
-        # Act
         response = login_interactor.user_login_wrapper(request_dto=valid_login_request)
 
-        # Assert
+        mock_login_log_storage.create.return_value = LoginLogDTOFactory()
+
         assert response.status_code == expected_status_code
         mock_user_storage.get_by_username.assert_called_once_with(
             username=expected_username
         )
         mock_presenter.get_inactive_account_response.assert_called_once_with()
+        mock_login_log_storage.create.assert_called_once()
         mock_login_log_storage.create.assert_called_once()
 
     @freeze_time("2025-01-01 12:00:00")
@@ -309,7 +282,6 @@ class TestUserLoginWrapper:
         active_user_dto,
         valid_login_request,
     ):
-        # Arrange
         expected_user_id = "user-123"
         expected_ip_address = "127.0.0.1"
         expected_user_agent = "Mozilla/5.0"
@@ -323,11 +295,12 @@ class TestUserLoginWrapper:
         mock_create_jwt_token.return_value = (expected_jwt_token, expected_expires_in)
         mock_login_log_storage.create.return_value = LoginLogDTOFactory()
 
-        # Act
+        mock_login_log_storage.create.return_value = LoginLogDTOFactory()
+
         response = login_interactor.user_login_wrapper(request_dto=valid_login_request)
 
-        # Assert
         assert response.status_code == expected_status_code
+        mock_login_log_storage.create.assert_called_once()
         mock_login_log_storage.create.assert_called_once()
         call_args = mock_login_log_storage.create.call_args
         assert call_args.kwargs["login_log_dto"].user_id == expected_user_id
@@ -345,7 +318,6 @@ class TestUserLoginWrapper:
         active_user_dto,
         valid_login_request,
     ):
-        # Arrange
         expected_user_id = "user-123"
         expected_ip_address = "127.0.0.1"
         expected_user_agent = "Mozilla/5.0"
@@ -356,11 +328,12 @@ class TestUserLoginWrapper:
         mock_verify_password.return_value = password_verification_result
         mock_login_log_storage.create.return_value = LoginLogDTOFactory()
 
-        # Act
+        mock_login_log_storage.create.return_value = LoginLogDTOFactory()
+
         response = login_interactor.user_login_wrapper(request_dto=valid_login_request)
 
-        # Assert
         assert response.status_code == expected_status_code
+        mock_login_log_storage.create.assert_called_once()
         mock_login_log_storage.create.assert_called_once()
         call_args = mock_login_log_storage.create.call_args
         assert call_args.kwargs["login_log_dto"].user_id == expected_user_id
@@ -375,15 +348,13 @@ class TestUserLoginWrapper:
         mock_presenter,
         valid_login_request,
     ):
-        # Arrange
         expected_status_code = 401
         user_not_found = None
 
         mock_user_storage.get_by_username.return_value = user_not_found
 
-        # Act
         response = login_interactor.user_login_wrapper(request_dto=valid_login_request)
 
-        # Assert
         assert response.status_code == expected_status_code
+        mock_login_log_storage.create.assert_not_called()
         mock_login_log_storage.create.assert_not_called()

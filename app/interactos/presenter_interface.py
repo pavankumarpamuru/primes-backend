@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 from fastapi.responses import JSONResponse
 
-from app.dtos import LoginResultDTO
+from app.dtos import LoginResultDTO, PrimeNumbersResultDTO
 
 
 class ILoginPresenter(ABC):
@@ -20,4 +20,14 @@ class ILoginPresenter(ABC):
 
     @abstractmethod
     def get_inactive_account_response(self) -> JSONResponse:
+        pass
+
+
+class IPrimeNumbersPresenter(ABC):
+    @abstractmethod
+    def get_success_response(self, result: PrimeNumbersResultDTO) -> JSONResponse:
+        pass
+
+    @abstractmethod
+    def get_invalid_input_response(self, message: str) -> JSONResponse:
         pass
