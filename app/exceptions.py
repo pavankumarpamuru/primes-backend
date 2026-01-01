@@ -1,23 +1,14 @@
-from typing import Optional
-
-
-class LoginException(Exception):
-    def __init__(self, user_id: Optional[str] = None):
-        super().__init__()
-        self.user_id = user_id
-
-
-class InvalidInputException(LoginException):
+class InvalidInputException(Exception):
     pass
 
 
-class UserNotFoundException(LoginException):
+class UserNotFoundException(Exception):
     pass
 
 
-class InvalidPasswordException(LoginException):
+class InvalidPasswordException(Exception):
     pass
 
 
-class InactiveAccountException(LoginException):
+class InactiveAccountException(Exception):
     pass

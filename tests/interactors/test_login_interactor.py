@@ -219,11 +219,8 @@ class TestUserLoginWrapper:
 
         mock_user_storage.get_by_username.return_value = active_user_dto
         mock_verify_password.return_value = password_verification_result
-        mock_login_log_storage.create.return_value = LoginLogDTOFactory()
 
         response = login_interactor.user_login_wrapper(request_dto=valid_login_request)
-
-        mock_login_log_storage.create.return_value = LoginLogDTOFactory()
 
         assert response.status_code == expected_status_code
         mock_user_storage.get_by_username.assert_called_once_with(
@@ -234,8 +231,6 @@ class TestUserLoginWrapper:
             hashed_password=active_user_dto.password_hash,
         )
         mock_presenter.get_invalid_credentials_response.assert_called_once_with()
-        mock_login_log_storage.create.assert_called_once()
-        mock_login_log_storage.create.assert_called_once()
 
     @patch("app.interactos.login_interactor.verify_password")
     def test_inactive_account(
@@ -254,19 +249,14 @@ class TestUserLoginWrapper:
 
         mock_user_storage.get_by_username.return_value = inactive_user_dto
         mock_verify_password.return_value = password_verification_result
-        mock_login_log_storage.create.return_value = LoginLogDTOFactory()
 
         response = login_interactor.user_login_wrapper(request_dto=valid_login_request)
-
-        mock_login_log_storage.create.return_value = LoginLogDTOFactory()
 
         assert response.status_code == expected_status_code
         mock_user_storage.get_by_username.assert_called_once_with(
             username=expected_username
         )
         mock_presenter.get_inactive_account_response.assert_called_once_with()
-        mock_login_log_storage.create.assert_called_once()
-        mock_login_log_storage.create.assert_called_once()
 
     @freeze_time("2025-01-01 12:00:00")
     @patch("app.interactos.login_interactor.create_jwt_token")
@@ -293,39 +283,6 @@ class TestUserLoginWrapper:
         mock_user_storage.get_by_username.return_value = active_user_dto
         mock_verify_password.return_value = password_verification_result
         mock_create_jwt_token.return_value = (expected_jwt_token, expected_expires_in)
-        mock_login_log_storage.create.return_value = LoginLogDTOFactory()
-
-        mock_login_log_storage.create.return_value = LoginLogDTOFactory()
-
-        response = login_interactor.user_login_wrapper(request_dto=valid_login_request)
-
-        assert response.status_code == expected_status_code
-        mock_login_log_storage.create.assert_called_once()
-        mock_login_log_storage.create.assert_called_once()
-        call_args = mock_login_log_storage.create.call_args
-        assert call_args.kwargs["login_log_dto"].user_id == expected_user_id
-        assert call_args.kwargs["login_log_dto"].ip_address == expected_ip_address
-        assert call_args.kwargs["login_log_dto"].user_agent == expected_user_agent
-
-    @patch("app.interactos.login_interactor.verify_password")
-    def test_failed_login_creates_login_log_with_user_id(
-        self,
-        mock_verify_password,
-        login_interactor,
-        mock_user_storage,
-        mock_login_log_storage,
-        mock_presenter,
-        active_user_dto,
-        valid_login_request,
-    ):
-        expected_user_id = "user-123"
-        expected_ip_address = "127.0.0.1"
-        expected_user_agent = "Mozilla/5.0"
-        expected_status_code = 401
-        password_verification_result = False
-
-        mock_user_storage.get_by_username.return_value = active_user_dto
-        mock_verify_password.return_value = password_verification_result
         mock_login_log_storage.create.return_value = LoginLogDTOFactory()
 
         mock_login_log_storage.create.return_value = LoginLogDTOFactory()

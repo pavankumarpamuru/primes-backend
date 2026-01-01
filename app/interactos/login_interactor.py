@@ -2,7 +2,6 @@ from typing import Optional
 
 from fastapi.responses import JSONResponse
 
-from app.decorators import log_failed_login
 from app.dtos import LoginLogDTO, LoginRequestDTO, LoginResultDTO, UserDTO
 from app.exceptions import (
     InactiveAccountException,
@@ -37,7 +36,6 @@ class LoginInteractor:
         except InactiveAccountException:
             return self.presenter.get_inactive_account_response()
 
-    @log_failed_login
     def _execute_login(self, request_dto: LoginRequestDTO) -> LoginResultDTO:
         self._validate_input(request_dto=request_dto)
 
@@ -72,12 +70,12 @@ class LoginInteractor:
 
     def _validate_user(self, user_dto: UserDTO, request_dto: LoginRequestDTO) -> None:
         if not user_dto.is_active:
-            raise InactiveAccountException(user_id=user_dto.id)
+            raise InactiveAccountException()
 
         if not verify_password(
             plain_password=request_dto.password, hashed_password=user_dto.password_hash
         ):
-            raise InvalidPasswordException(user_id=user_dto.id)
+            raise InvalidPasswordException()
 
     def _generate_token(self, user_dto: UserDTO) -> tuple[str, int]:
         return create_jwt_token(user_id=user_dto.id, username=user_dto.username)
