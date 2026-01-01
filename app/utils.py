@@ -23,7 +23,7 @@ def create_jwt_token(user_id: str, username: str) -> tuple[str, int]:
     expire = now + expires_delta
 
     payload = {
-        "sub": user_id,
+        "user_id": user_id,
         "username": username,
         "exp": expire,
         "iat": now,
