@@ -2,11 +2,13 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
 from app import settings
 from app.database import create_db_and_tables
+from app.middleware.exception_handlers import validation_exception_handler
 from app.routers import auth_router, primes_router
 
 
@@ -16,13 +18,12 @@ async def lifespan(app: FastAPI):
 
     if os.getenv("ENABLE_METRICS", "false").lower() == "true":
         from app.observability.metrics import setup_metrics
-
         otlp_endpoint = os.getenv("OTLP_ENDPOINT", "http://otel-collector:4317")
         environment = os.getenv("ENVIRONMENT", "development")
         setup_metrics(
             service_name=settings.APP_NAME,
             otlp_endpoint=otlp_endpoint,
-            environment=environment,
+            environment=environment
         )
         SQLAlchemyInstrumentor().instrument()
 
@@ -30,6 +31,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title=settings.APP_NAME, version=settings.APP_VERSION, lifespan=lifespan)
+
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 if os.getenv("ENABLE_METRICS", "false").lower() == "true":
     FastAPIInstrumentor.instrument_app(app)
