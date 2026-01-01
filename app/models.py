@@ -19,6 +19,7 @@ class User(sqlmodel.SQLModel, table=True):
     password_hash: str = sqlmodel.Field(max_length=255)
     email: str = sqlmodel.Field(index=True, unique=True, max_length=255)
     phone_number: Optional[str] = sqlmodel.Field(default=None, max_length=20)
+    country_code: Optional[str] = sqlmodel.Field(default=None, max_length=20)
     is_active: bool = sqlmodel.Field(default=True)
     created_at: datetime = sqlmodel.Field(
         default_factory=datetime.utcnow, nullable=False
