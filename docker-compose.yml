@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: primes-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENABLE_METRICS=true
+      - OTLP_ENDPOINT=http://otel-collector:4317
+      - ENVIRONMENT=development
+    volumes:
+      - .:/app
+    networks:
+      - observability
+    depends_on:
+      - otel-collector
+    restart: unless-stopped
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector-config.yml"]
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+    networks:
+      - observability
+    depends_on:
+      - victoriametrics
+    restart: unless-stopped
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: victoriametrics
+    ports:
+      - "8428:8428"
+    command:
+      - '--storageDataPath=/victoria-metrics-data'
+      - '--httpListenAddr=:8428'
+      - '--retentionPeriod=1'
+    volumes:
+      - victoria-metrics-data:/victoria-metrics-data
+    networks:
+      - observability
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./grafana-dashboard.json:/var/lib/grafana/dashboards/dashboard.json
+      - ./grafana-dashboard-config.yml:/etc/grafana/provisioning/dashboards/dashboard.yml
+    networks:
+      - observability
+    depends_on:
+      - victoriametrics
+    restart: unless-stopped
+
+networks:
+  observability:
+    driver: bridge
+
+volumes:
+  victoria-metrics-data:
+  grafana-data:
