@@ -10,13 +10,28 @@ services:
       - ENABLE_METRICS=true
       - OTLP_ENDPOINT=http://otel-collector:4317
       - ENVIRONMENT=development
+      - REDIS_URL=redis://redis:6379
+      - ENABLE_RATE_LIMITING=true
     volumes:
       - .:/app
     networks:
       - observability
     depends_on:
       - otel-collector
+      - redis
     restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - observability
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
@@ -74,3 +89,4 @@ networks:
 volumes:
   victoria-metrics-data:
   grafana-data:
+  redis-data:
