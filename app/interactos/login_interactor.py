@@ -38,6 +38,7 @@ class LoginInteractor:
             return self.presenter.get_inactive_account_response()
 
     def _execute_login(self, request_dto: LoginRequestDTO) -> LoginResultDTO:
+
         self._validate_input(request_dto=request_dto)
 
         user_dto = self._fetch_user(username=request_dto.username)
@@ -45,6 +46,8 @@ class LoginInteractor:
         self._validate_user(user_dto=user_dto, request_dto=request_dto)
 
         jwt_token, expires_in = self._generate_token(user_dto=user_dto)
+        if request_dto.ip_address:
+            check_login_location.delay(user_dto.id, request_dto.ip_address)
 
         self._log_successful_login(
             user_id=user_dto.id,
@@ -88,9 +91,6 @@ class LoginInteractor:
             user_id=user_id, ip_address=ip_address, user_agent=user_agent
         )
         self.login_log_storage.create(login_log_dto=log_dto)
-
-        if ip_address:
-            check_login_location.delay(user_id, ip_address)
 
     def _log_failed_login(
         self,
