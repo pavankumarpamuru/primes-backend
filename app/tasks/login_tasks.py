@@ -11,7 +11,7 @@ def check_login_location(user_id: str, current_ip: str):
         statement = (
             select(LoginLog)
             .where(LoginLog.user_id == user_id)
-            .order_by(LoginLog.login_at.desc())
+            .order_by(LoginLog.login_timestamp.desc())
             .limit(5)
         )
         recent_logins = session.exec(statement).all()
