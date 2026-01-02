@@ -11,6 +11,7 @@ from app.exceptions import (
 )
 from app.interactos.presenter_interface import ILoginPresenter
 from app.interactos.storage_interface import ILoginLogStorage, IUserStorage
+from app.tasks.login_tasks import check_login_location
 from app.utils import create_jwt_token, verify_password
 
 
@@ -87,6 +88,9 @@ class LoginInteractor:
             user_id=user_id, ip_address=ip_address, user_agent=user_agent
         )
         self.login_log_storage.create(login_log_dto=log_dto)
+
+        if ip_address:
+            check_login_location.delay(user_id, ip_address)
 
     def _log_failed_login(
         self,

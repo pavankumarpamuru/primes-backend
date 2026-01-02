@@ -21,6 +21,20 @@ services:
       - redis
     restart: unless-stopped
 
+  celery-worker:
+    build: .
+    container_name: celery-worker
+    command: celery -A app.celery_app worker --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - .:/app
+    networks:
+      - observability
+    depends_on:
+      - redis
+    restart: unless-stopped
+
   redis:
     image: redis:7-alpine
     container_name: redis
