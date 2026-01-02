@@ -12,10 +12,11 @@ def check_login_location(user_id: str, current_ip: str):
             select(LoginLog)
             .where(LoginLog.user_id == user_id)
             .order_by(LoginLog.login_timestamp.desc())
-            .limit(5)
+            .limit(6)
         )
-        recent_logins = session.exec(statement).all()
+        all_logins = session.exec(statement).all()
 
+        recent_logins = all_logins[1:6] if len(all_logins) > 1 else []
         recent_ips = [login.ip_address for login in recent_logins if login.ip_address]
 
         if current_ip not in recent_ips and len(recent_ips) > 0:
