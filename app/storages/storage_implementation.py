@@ -6,12 +6,14 @@ from sqlmodel import Session, select
 from app.dtos import LoginLogDTO, UserDTO
 from app.interactos.storage_interface import ILoginLogStorage, IUserStorage
 from app.models import LoginLog, User
+from app.observability.metric_decorators import track_db_query
 
 
 class UserStorage(IUserStorage):
     def __init__(self, session: Session):
         self.session = session
 
+    @track_db_query(operation="select")
     def get_by_username(self, username: str) -> Optional[UserDTO]:
         statement = select(User).where(User.username == username)
         user = self.session.exec(statement=statement).first()
@@ -35,6 +37,7 @@ class LoginLogStorage(ILoginLogStorage):
     def __init__(self, session: Session):
         self.session = session
 
+    @track_db_query(operation="insert")
     def create(self, login_log_dto: LoginLogDTO) -> LoginLogDTO:
         login_log = LoginLog(
             user_id=login_log_dto.user_id,

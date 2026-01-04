@@ -1,12 +1,10 @@
-import time
-
 from fastapi.responses import JSONResponse
 
 from app.constants import MAX_PRIME_COUNT
 from app.dtos import PrimeNumbersRequestDTO, PrimeNumbersResultDTO
 from app.exceptions import InvalidInputException
 from app.interactos.presenter_interface import IPrimeNumbersPresenter
-from app.observability.custom_metrics import record_prime_generation
+from app.observability.metric_decorators import track_prime_generation
 
 
 class PrimeNumbersInteractor:
@@ -26,13 +24,7 @@ class PrimeNumbersInteractor:
         self, request_dto: PrimeNumbersRequestDTO
     ) -> PrimeNumbersResultDTO:
         self._validate_input(request_dto=request_dto)
-
-        start_time = time.time()
         primes = self._generate_n_primes(count=request_dto.count)
-        duration_ms = (time.time() - start_time) * 1000
-
-        record_prime_generation(duration_ms=duration_ms)
-
         return PrimeNumbersResultDTO(count=request_dto.count, primes=primes)
 
     def _validate_input(self, request_dto: PrimeNumbersRequestDTO) -> None:
@@ -42,6 +34,7 @@ class PrimeNumbersInteractor:
         if request_dto.count > MAX_PRIME_COUNT:
             raise InvalidInputException()
 
+    @track_prime_generation
     def _generate_n_primes(self, count: int) -> list[int]:
         primes = []
         num = 2

@@ -11,6 +11,7 @@ from app.exceptions import (
 )
 from app.interactos.presenter_interface import ILoginPresenter
 from app.interactos.storage_interface import ILoginLogStorage, IUserStorage
+from app.observability.metric_decorators import track_auth_attempt
 from app.tasks.login_tasks import check_login_location
 from app.utils import create_jwt_token, verify_password
 
@@ -37,8 +38,8 @@ class LoginInteractor:
         except InactiveAccountException:
             return self.presenter.get_inactive_account_response()
 
+    @track_auth_attempt
     def _execute_login(self, request_dto: LoginRequestDTO) -> LoginResultDTO:
-
         self._validate_input(request_dto=request_dto)
 
         user_dto = self._fetch_user(username=request_dto.username)

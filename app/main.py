@@ -8,7 +8,10 @@ from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
 from app import settings
 from app.database import create_db_and_tables
-from app.middleware.exception_handlers import validation_exception_handler
+from app.middleware.exception_handlers import (
+    generic_exception_handler,
+    validation_exception_handler,
+)
 from app.middleware.rate_limiter import rate_limit_middleware
 from app.routers import auth_router, primes_router
 
@@ -35,6 +38,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title=settings.APP_NAME, version=settings.APP_VERSION, lifespan=lifespan)
 
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 
 # Add rate limiting middleware for login endpoint
 if os.getenv("ENABLE_RATE_LIMITING", "true").lower() == "true":
