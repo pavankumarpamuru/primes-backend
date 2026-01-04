@@ -26,37 +26,18 @@
       "fieldConfig": {"defaults": {"unit": "s"}}
     },
     {
-      "title": "Error Rate",
-      "type": "timeseries",
-      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0},
-      "targets": [{
-        "expr": "sum(rate(http_server_duration_milliseconds_count{http_status_code=~\"5..\"}[5m])) / sum(rate(http_server_duration_milliseconds_count[5m]))",
-        "legendFormat": "errors"
-      }],
-      "fieldConfig": {"defaults": {"unit": "percentunit"}}
-    },
-    {
       "title": "Requests by Status Code",
       "type": "timeseries",
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0},
       "targets": [{
         "expr": "sum by (http_status_code) (rate(http_server_duration_milliseconds_count[5m]))",
         "legendFormat": "{{http_status_code}}"
       }]
     },
     {
-      "title": "Top Endpoints",
-      "type": "bargauge",
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
-      "targets": [{
-        "expr": "topk(10, sum by (http_target) (rate(http_server_duration_milliseconds_count[5m])))",
-        "legendFormat": "{{http_target}}"
-      }]
-    },
-    {
       "title": "Average Response Time by Endpoint",
       "type": "timeseries",
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
       "targets": [{
         "expr": "sum by (http_target) (rate(http_server_duration_milliseconds_sum[5m])) / sum by (http_target) (rate(http_server_duration_milliseconds_count[5m])) / 1000",
         "legendFormat": "{{http_target}}"
@@ -64,13 +45,34 @@
       "fieldConfig": {"defaults": {"unit": "s"}}
     },
     {
-      "title": "Active Requests",
+      "title": "Prime Generation Requests",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "targets": [{
+        "expr": "sum(rate(primes_requests_total[5m]))",
+        "legendFormat": "req/s"
+      }],
+      "fieldConfig": {"defaults": {"unit": "reqps"}}
+    },
+    {
+      "title": "Prime Generation Latency (p50/p95/p99)",
       "type": "timeseries",
       "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
-      "targets": [{
-        "expr": "http_server_active_requests",
-        "legendFormat": "Active"
-      }]
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(primes_generation_duration_milliseconds_bucket[5m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(primes_generation_duration_milliseconds_bucket[5m]))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(primes_generation_duration_milliseconds_bucket[5m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "ms"}}
     }
   ]
 }
