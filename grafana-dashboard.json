@@ -30,7 +30,7 @@
       "type": "timeseries",
       "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0},
       "targets": [{
-        "expr": "sum(rate(http_errors_total[5m])) / sum(rate(http_server_duration_milliseconds_count[5m]))",
+        "expr": "sum(increase(http_errors_total[5m])) / sum(increase(http_server_duration_milliseconds_count[5m]))",
         "legendFormat": "error rate"
       }],
       "fieldConfig": {
@@ -46,7 +46,7 @@
       "type": "stat",
       "gridPos": {"h": 8, "w": 8, "x": 0, "y": 8},
       "targets": [{
-        "expr": "sum(rate(auth_attempts_total{success=\"true\"}[5m])) / sum(rate(auth_attempts_total[5m]))",
+        "expr": "sum(increase(auth_attempts_total{success=\"true\"}[1h])) / sum(increase(auth_attempts_total[1h]))",
         "legendFormat": "success rate"
       }],
       "fieldConfig": {
@@ -89,7 +89,7 @@
       "type": "gauge",
       "gridPos": {"h": 8, "w": 8, "x": 0, "y": 16},
       "targets": [{
-        "expr": "system_cpu_usage",
+        "expr": "system_cpu_usage_percent",
         "legendFormat": "CPU"
       }],
       "fieldConfig": {
@@ -113,7 +113,7 @@
       "type": "gauge",
       "gridPos": {"h": 8, "w": 8, "x": 8, "y": 16},
       "targets": [{
-        "expr": "system_memory_usage",
+        "expr": "system_memory_usage_percent",
         "legendFormat": "Memory"
       }],
       "fieldConfig": {
